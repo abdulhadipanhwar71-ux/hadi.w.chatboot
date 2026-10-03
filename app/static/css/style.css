@@ -1,0 +1,45 @@
+/* WhatsApp Business Bot Admin Styles */
+body {
+    background-color: #f4f6f9;
+    color: #212529;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.navbar-brand {
+    letter-spacing: -0.5px;
+}
+
+.fs-7 {
+    font-size: 0.78rem;
+}
+
+.card {
+    transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08) !important;
+}
+
+.table th {
+    font-weight: 600;
+    color: #495057;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.table td {
+    font-size: 0.92rem;
+}
+
+.badge {
+    font-weight: 500;
+    letter-spacing: 0.2px;
+}
+
+/* RTL Support for Sindhi and Urdu */
+[dir="rtl"] {
+    text-align: right;
+    font-family: "Segoe UI", Tahoma, "Noto Sans Arabic", sans-serif;
+}
