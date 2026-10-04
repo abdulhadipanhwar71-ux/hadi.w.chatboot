@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="ur" dir="auto">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Business Bot - Live Interactive Simulator</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --wa-teal: #008069;
+            --wa-teal-dark: #005c4b;
+            --wa-bg: #efeae2;
+            --wa-incoming: #ffffff;
+            --wa-outgoing: #d9fdd3;
+        }
+
+        body {
+            background-color: #cbd5e1;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Nastaliq Urdu", Helvetica, Arial, sans-serif;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .phone-wrapper {
+            width: 100%;
+            max-width: 530px;
+            height: 97vh;
+            background: var(--wa-bg);
+            border-radius: 18px;
+            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.28);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .chat-header {
+            background-color: var(--wa-teal);
+            color: #ffffff;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 10;
+        }
+
+        .avatar-box {
+            width: 42px;
+            height: 42px;
+            background-color: #ffffff;
+            color: var(--wa-teal);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #25d366;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .control-bar {
+            background-color: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+        }
+
+        .lang-btn {
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            color: #334155;
+            padding: 2px 9px;
+            border-radius: 12px;
+            font-size: 0.76rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .lang-btn:hover {
+            border-color: var(--wa-teal);
+            color: var(--wa-teal);
+        }
+
+        .lang-btn.active {
+            background-color: var(--wa-teal);
+            border-color: var(--wa-teal);
+            color: #ffffff;
+        }
+
+        .chat-body {
+            flex-grow: 1;
+            padding: 14px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background-image: radial-gradient(#d3cbbe 1px, transparent 1px);
+            background-size: 16px 16px;
+            position: relative;
+        }
+
+        .msg {
+            max-width: 85%;
+            padding: 9px 14px;
+            border-radius: 8px;
+            position: relative;
+            font-size: 0.93rem;
+            line-height: 1.5;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+
+        .msg-incoming {
+            align-self: flex-start;
+            background-color: var(--wa-incoming);
+            color: #111b21;
+            border-top-left-radius: 2px;
+        }
+
+        .msg-outgoing {
+            align-self: flex-end;
+            background-color: var(--wa-outgoing);
+            color: #111b21;
+            border-top-right-radius: 2px;
+        }
+
+        .msg-time {
+            font-size: 0.68rem;
+            color: #667781;
+            float: right;
+            margin-top: 5px;
+            margin-left: 10px;
+        }
+
+        /* Order Address Form Card (Drawer / Modal) */
+        .order-card-container {
+            display: none;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            border-top: 2px solid var(--wa-teal);
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            box-shadow: 0 -8px 25px rgba(0,0,0,0.2);
+            z-index: 20;
+            padding: 16px;
+            max-height: 85%;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .quick-chips-wrapper {
+            background-color: #f0f2f5;
+            padding: 7px 10px;
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            border-top: 1px solid #e9edef;
+            scrollbar-width: thin;
+        }
+
+        .chip-btn {
+            background: #ffffff;
+            border: 1px solid #d1d7db;
+            color: #111b21;
+            font-size: 0.78rem;
+            font-weight: 500;
+            padding: 4px 10px;
+            border-radius: 14px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+
+        .chip-btn:hover {
+            background: var(--wa-teal);
+            color: #ffffff;
+            border-color: var(--wa-teal);
+        }
+
+        .chip-btn-primary {
+            background-color: #e0f2fe;
+            border-color: #0284c7;
+            color: #0369a1;
+            font-weight: 600;
+        }
+
+        .chip-btn-success {
+            background-color: #dcfce7;
+            border-color: #16a34a;
+            color: #15803d;
+            font-weight: 600;
+        }
+
+        .chat-footer {
+            background-color: #f0f2f5;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chat-input {
+            flex-grow: 1;
+            border-radius: 22px;
+            border: 1px solid #cbd5e1;
+            padding: 9px 16px;
+            background-color: #ffffff;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .chat-input:focus {
+            border-color: var(--wa-teal);
+        }
+
+        .send-btn {
+            background-color: var(--wa-teal);
+            color: #ffffff;
+            border: none;
+            border-radius: 50%;
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .send-btn:hover {
+            background-color: var(--wa-teal-dark);
+        }
+    </style>
+</head>
+<body>
+
+<div class="phone-wrapper">
+    <!-- Header -->
+    <div class="chat-header">
+        <div class="d-flex align-items-center gap-3">
+            <div class="avatar-box">
+                <i class="fa-solid fa-store"></i>
+            </div>
+            <div>
+                <h6 class="mb-0 fw-bold">CTrend Official Store</h6>
+                <small class="opacity-90 d-flex align-items-center gap-1">
+                    <span class="status-dot"></span> WhatsApp Business Bot (Live)
+                </small>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-light text-dark fw-bold py-1 px-2" onclick="openOrdersModal()" title="View Approved Orders">
+                <i class="fa-solid fa-box-open text-primary me-1"></i>
+                <span id="headerOrdersBtnText">منظور شدہ آرڈرز</span>
+                <span class="badge bg-danger rounded-pill ms-1" id="ordersBadgeCount" style="display:none;">0</span>
+            </button>
+            <a href="https://github.com/abdulhadipanhwar71-ux/hadi.w.chatboot" target="_blank" class="btn btn-sm btn-outline-light py-1 px-2 fw-semibold" title="View Source on GitHub">
+                <i class="fa-brands fa-github"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Simulator Control & Language Switcher -->
+    <div class="control-bar">
+        <div class="d-flex align-items-center gap-1">
+            <span class="text-secondary small fw-semibold me-1"><i class="fa-solid fa-globe text-primary"></i> زبان:</span>
+            <button class="lang-btn active" id="btnLangUrdu" onclick="switchLanguage('ur')">🇵🇰 اردو</button>
+            <button class="lang-btn" id="btnLangEn" onclick="switchLanguage('en')">🇬🇧 English</button>
+            <button class="lang-btn" id="btnLangSd" onclick="switchLanguage('sd')">🇸🇩 سنڌي</button>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-outline-success py-0 px-2 fw-semibold" onclick="toggleOrderCard(true)" title="Open Address & Order Form Card">
+                <i class="fa-solid fa-address-card me-1"></i> <span id="openCardBtnText">پتہ فارم</span>
+            </button>
+            <button class="btn btn-sm btn-outline-danger py-0 px-2 fw-semibold" onclick="resetChat()" title="Start Fresh">
+                <i class="fa-solid fa-rotate-left me-1"></i> ری سیٹ
+            </button>
+        </div>
+    </div>
+
+    <!-- Customer Phone Config Bar -->
+    <div class="bg-white px-3 py-1 border-bottom d-flex align-items-center justify-content-between text-muted small" style="font-size: 0.78rem;">
+        <div class="d-flex align-items-center gap-2">
+            <span><i class="fa-brands fa-whatsapp text-success"></i> کسٹمر فون:</span>
+            <input type="text" id="phoneInput" value="923001234567" onchange="refreshCustomerOrdersBadge()" class="form-control form-control-sm py-0 px-2 font-monospace" style="width: 135px; font-size: 0.8rem;">
+        </div>
+        <div>
+            <span class="badge bg-success-subtle text-success border border-success-subtle">
+                <i class="fa-solid fa-shield-halved me-1"></i> ویریفائیڈ بزنس اسٹور
+            </span>
+        </div>
+    </div>
+
+    <!-- Chat Messages Window -->
+    <div class="chat-body" id="chatBody">
+        <!-- Messages rendered dynamically -->
+    </div>
+
+    <!-- Interactive Delivery Address & Order Card -->
+    <div class="order-card-container" id="orderCardContainer">
+        <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-3">
+            <div class="d-flex align-items-center gap-2 text-success">
+                <i class="fa-solid fa-id-card fs-5"></i>
+                <h6 class="mb-0 fw-bold" id="cardTitle">📝 آرڈر اور ترسیلی پتہ فارم (Address Card)</h6>
+            </div>
+            <button class="btn-close" onclick="toggleOrderCard(false)"></button>
+        </div>
+
+        <form id="orderCardForm" onsubmit="submitOrderCardForm(event)">
+            <div class="row g-2">
+                <!-- Product Selection -->
+                <div class="col-12">
+                    <label class="form-label small fw-bold mb-1" id="lblProduct">📦 مطلوبہ پروڈکٹ منتخب کریں:</label>
+                    <select class="form-select form-select-sm" id="cardProductCode" required>
+                        <option value="P101" selected>Authentic Sindhi Ajrak Shawl - Rs 2,500</option>
+                        <option value="P102">Handcrafted Sindhi Cap with Mirrors - Rs 1,200</option>
+                        <option value="P103">Premium Sukkur Organic Dates (1 KG) - Rs 950</option>
+                        <option value="P104">100% Pure Organic Sidr Honey (1 KG) - Rs 3,200</option>
+                        <option value="P105">Traditional Heritage Sindhi Quilt (Rilli) - Rs 4,500</option>
+                    </select>
+                </div>
+
+                <!-- Quantity -->
+                <div class="col-4">
+                    <label class="form-label small fw-bold mb-1" id="lblQty">🔢 تعداد:</label>
+                    <input type="number" class="form-control form-control-sm" id="cardQuantity" value="1" min="1" max="50" required>
+                </div>
+
+                <!-- Customer Full Name -->
+                <div class="col-8">
+                    <label class="form-label small fw-bold mb-1" id="lblName">👤 خریدار کا پورا نام:</label>
+                    <input type="text" class="form-control form-control-sm" id="cardCustomerName" placeholder="مثلاً: علی احمد خان" required>
+                </div>
+
+                <!-- Customer Contact Phone -->
+                <div class="col-12">
+                    <label class="form-label small fw-bold mb-1" id="lblPhone">📞 رابطہ موبائل نمبر:</label>
+                    <input type="text" class="form-control form-control-sm font-monospace" id="cardCustomerPhone" placeholder="03001234567" required>
+                </div>
+
+                <!-- Delivery Address & City -->
+                <div class="col-12">
+                    <label class="form-label small fw-bold mb-1" id="lblAddress">📍 ترسیلی پتہ اور شہر کا نام:</label>
+                    <textarea class="form-control form-control-sm" id="cardDeliveryAddress" rows="2" placeholder="مکان نمبر، گلی، محلہ، اور شہر کا نام درج کریں..." required></textarea>
+                </div>
+
+                <!-- Payment Method -->
+                <div class="col-12">
+                    <label class="form-label small fw-bold mb-1" id="lblPayment">💳 طریقہ ادائیگی (Payment Method):</label>
+                    <select class="form-select form-select-sm" id="cardPaymentMethod" required>
+                        <option value="Cash on Delivery" selected>1️⃣ کیش آن ڈیلیوری (Cash on Delivery - COD)</option>
+                        <option value="EasyPaisa / JazzCash">2️⃣ ایزی پیسہ یا جاز کیش (EasyPaisa / JazzCash)</option>
+                        <option value="Direct Bank Transfer">3️⃣ آن لائن بینک اکاؤنٹ ٹرانسفر (Meezan Bank Ltd)</option>
+                    </select>
+                </div>
+
+                <!-- Submit and Cancel Buttons -->
+                <div class="col-12 d-flex gap-2 mt-3">
+                    <button type="submit" class="btn btn-success btn-sm flex-grow-1 fw-bold py-2 shadow-sm" id="btnSubmitCard">
+                        <i class="fa-solid fa-check-circle me-1"></i> آرڈر بک اور کنفرم کریں
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="toggleOrderCard(false)">
+                        بند کریں
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Contextual Quick Action Chips -->
+    <div class="quick-chips-wrapper" id="quickChips">
+        <!-- Injected via JavaScript based on active language -->
+    </div>
+
+    <!-- Chat Input Footer -->
+    <div class="chat-footer">
+        <input type="text" id="messageInput" class="chat-input" placeholder="پیغام لکھیں (مثلاً: 1، 2، P101)..." autofocus autocomplete="off">
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+            <i class="fa-solid fa-paper-plane"></i>
+        </button>
+    </div>
+</div>
+
+<!-- Approved Orders Modal (منظور شدہ اور سابقہ آرڈرز) -->
+<div class="modal fade" id="ordersModal" tabindex="-1" aria-labelledby="ordersModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content shadow border-0 rounded-4">
+            <div class="modal-header bg-success text-white py-3">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-boxes-packing fs-4"></i>
+                    <div>
+                        <h6 class="modal-title fw-bold mb-0" id="ordersModalLabel">منظور شدہ اور سابقہ آرڈرز کی تاریخچہ</h6>
+                        <small class="opacity-90 font-monospace" id="modalCustomerPhone">923001234567</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-3" id="ordersModalBody">
+                <!-- Rendered dynamically -->
+            </div>
+            <div class="modal-footer py-2 bg-light">
+                <button type="button" class="btn btn-sm btn-outline-success" onclick="toggleOrderCard(true)" data-bs-dismiss="modal">
+                    <i class="fa-solid fa-cart-plus me-1"></i> نیا آرڈر کریں (پتہ کارڈ)
+                </button>
+                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">بند کریں</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    const chatBody = document.getElementById('chatBody');
+    const messageInput = document.getElementById('messageInput');
+    const phoneInput = document.getElementById('phoneInput');
+    const quickChips = document.getElementById('quickChips');
+    const orderCardContainer = document.getElementById('orderCardContainer');
+    const ordersBadgeCount = document.getElementById('ordersBadgeCount');
+
+    let currentLang = 'ur';
+    let ordersModalInstance = null;
+
+    // In-browser commerce state machine (for static GitHub Pages hosting)
+    const PRODUCTS = {
+        P101: { name_ur: "اصلی سندھی اجرک شال", name_en: "Authentic Sindhi Ajrak Shawl", name_sd: "اصل سنڌي اجرڪ شال", price: 2500, desc: "روایتی قدرتی بلاک پرنٹ سے تیار کردہ شاندار اجرک" },
+        P102: { name_ur: "روایتی سندھی ٹوپی (شیشہ دار)", name_en: "Handcrafted Sindhi Cap with Mirrors", name_sd: "هٿ جي ٺهيل سنڌي ٽوپي", price: 1200, desc: "شیشے کے کام سے مزین روایتی ہینڈ میڈ ٹوپی" },
+        P103: { name_ur: "سکھر کی نامیاتی کھجور (1 کلو)", name_en: "Premium Sukkur Organic Dates (1 KG)", name_sd: "سکر جون نامياتي کجورون", price: 950, desc: "سکھر کے باغات کی تازہ اور غذائیت سے بھرپور کھجوریں" },
+        P104: { name_ur: "خالص بیری کا شہد (1 کلو)", name_en: "100% Pure Organic Sidr Honey (1 KG)", name_sd: "خالص ٻير جو ماکيءَ", price: 3200, desc: "100% قدرتی اور خالص بیر کا چھتے کا شہد" },
+        P105: { name_ur: "روایتی سندھی رلی (ہینڈ میڈ)", name_en: "Traditional Heritage Sindhi Quilt (Rilli)", name_sd: "روايتي سنڌي رلي", price: 4500, desc: "سندھی ثقافت کی پہچان خوبصورت ہاتھ کی بنی رلی" }
+    };
+
+    const TEXTS = {
+        ur: {
+            main_menu: "🌸 *ہمارے واٹس ایپ اسٹور میں خوش آمدید*\n\n1️⃣ ہماری پروڈکٹس اور قیمتیں 🛍️\n2️⃣ نیا آرڈر بک کریں 🛒\n3️⃣ اپنا آرڈر ٹریک کریں 🔍\n4️⃣ کاروباری معلومات و طریقہ ادائیگی 💳\n5️⃣ ہمارے نمائندے سے رابطہ کریں 👨‍💼\n6️⃣ زبان / Language 🌐\n\nبراہ کرم مطلوبہ آپشن کا نمبر (1 تا 6) درج کریں:",
+            catalog_header: "🛍️ *ہماری دستیاب پروڈکٹس اور قیمتیں:*\n━━━━━━━━━━━━━━━━━━━━━━━\n",
+            catalog_footer: "\n━━━━━━━━━━━━━━━━━━━━━━━\n🛒 آرڈر کرنے کے لیے پروڈکٹ کوڈ (مثلاً `P101`) لکھیں یا *2* درج کریں۔\n📋 مین مینیو کے لیے *0* لکھیں۔",
+            order_prompt: "🛒 *نیا آرڈر بک کریں:*\n\nبراہ کرم جس چیز کا آرڈر کرنا چاہتے ہیں اس کا کوڈ لکھیں (مثلاً: P101, P102, P103):\nیا اوپر دیے گئے *📝 پتہ فارم* کے بٹن پر کلک کر کے ایک ہی کارڈ میں نام و پتہ بھریں۔\n\n(واپسی کے لیے 0 لکھیں)",
+            business_info: "🏢 *کاروباری معلومات و ادائیگی کے ذرائع:*\n━━━━━━━━━━━━━━━━━━━━━━━\n⏰ دفتری اوقات: صبح 09:00 تا رات 10:00 (روزانہ)\n🚚 ڈیلیوری سروس: ملک بھر میں 2 سے 3 کاروباری ایام کے اندر (مفت ڈیلیوری)\n💳 ادائیگی کے منظور شدہ ذرائع:\n   • کیش آن ڈیلیوری (COD - رقم بوقت وصولی)\n   • ایزی پیسہ / جاز کیش: 0300-1234567 (ٹائٹل: CTrend Store)\n   • بینک اکاؤنٹ: میزان بینک (Meezan Bank Ltd)\n📍 ہیڈ آفس: سندھ ٹریڈ سینٹر، کراچی، پاکستان\n📞 ہیلپ لائن و واٹس ایپ: +92 300 1234567\n━━━━━━━━━━━━━━━━━━━━━━━\n\nمین مینیو کے لیے *0* درج کریں۔",
+            agent_handoff: "👨‍💼 آپ کی درخواست کسٹمر کیئر ٹیم کو موصول ہو گئی ہے۔\nہمارا سینئر نمائندہ جلد ہی یہاں واٹس ایپ پر آپ سے رابطہ کرے گا۔\n\nمین مینیو کے لیے *0* درج کریں۔"
+        },
+        en: {
+            main_menu: "🌸 *Welcome to our WhatsApp Store*\n\n1️⃣ Products & Pricing 🛍️\n2️⃣ Place a New Order 🛒\n3️⃣ Track Your Order 🔍\n4️⃣ Business & Payment Details 💳\n5️⃣ Connect with Human Agent 👨‍💼\n6️⃣ Language / ٻولي / زبان 🌐\n\nPlease reply with an option number (1-6):",
+            catalog_header: "🛍️ *Our Available Products & Pricing:*\n━━━━━━━━━━━━━━━━━━━━━━━\n",
+            catalog_footer: "\n━━━━━━━━━━━━━━━━━━━━━━━\n🛒 To place an order, type product code (e.g. `P101`) or reply *2*.\n📋 For Main Menu, reply *0*.",
+            order_prompt: "🛒 *Place a New Order:*\n\nPlease reply with product code (e.g. P101, P102), or click the *📝 Address Card* button above to fill your delivery details directly!\n\n(Reply 0 for menu)",
+            business_info: "🏢 *Business Information & Payment Accounts:*\n━━━━━━━━━━━━━━━━━━━━━━━\n⏰ Working Hours: 09:00 AM - 10:00 PM (Daily)\n🚚 Nationwide Delivery: 2-3 business days across Pakistan (Free Delivery)\n💳 Accepted Payment Options:\n   • Cash on Delivery (COD - Pay when rider arrives)\n   • EasyPaisa / JazzCash: 0300-1234567\n   • Direct Bank Transfer: Meezan Bank Ltd\n📍 Head Office: Sindh Trade Center, Karachi, Pakistan\n📞 Helpline / WhatsApp: +92 300 1234567\n━━━━━━━━━━━━━━━━━━━━━━━\n\nReply *0* for Main Menu.",
+            agent_handoff: "👨‍💼 Your request has been forwarded to our support representative.\nAn agent will message you back shortly.\n\nReply *0* to return to Main Menu."
+        },
+        sd: {
+            main_menu: "🌸 *اسان جي واٽس ايپ اسٽور ۾ ڀلي ڪري آيا*\n\n1️⃣ اسان جون پروڊڪٽس ۽ قيمتون 🛍️\n2️⃣ نئون آرڊر ڪريو 🛒\n3️⃣ پنهنجو آرڊر ٽريڪ ڪريو 🔍\n4️⃣ ڪاروبار ۽ ادائگي جا تفصيل 💳\n5️⃣ اسان جي نمائندي سان ڳالهايو 👨‍💼\n6️⃣ ٻولي / Language 🌐\n\nمهرباني ڪري گهربل آپشن جو نمبر (1 کان 6) لکو:",
+            catalog_header: "🛍️ *اسان جون دستياب پروڊڪٽس ۽ قيمتون:*\n━━━━━━━━━━━━━━━━━━━━━━━\n",
+            catalog_footer: "\n━━━━━━━━━━━━━━━━━━━━━━━\n🛒 آرڊر ڪرڻ لاءِ پراڊڪٽ ڪوڊ (مثال `P101`) لکو يا *2* لکو.\n📋 مينيو ڏسڻ لاءِ *0* لکو.",
+            order_prompt: "🛒 *نئون آرڊر لکايو:*\n\nمهرباني ڪري پراڊڪٽ ڪوڊ لکو (مثال: P101, P102)، يا مٿي ڏنل *📝 پتو فارم* ذريعي هڪ ئي ڪارڊ ۾ سمورا تفصيل ڀريو.\n\n(واپس وڃڻ لاءِ 0 لکو)",
+            business_info: "🏢 *ڪاروبار ۽ پئسن جي ادائگي بابت معلومات:*\n━━━━━━━━━━━━━━━━━━━━━━━\n⏰ ڪم جا ڪلاڪ: صبح 09:00 کان رات 10:00 تائين (روزانو)\n🚚 ڊليوري سروس: پوري سنڌ ۽ پاڪستان ۾ (مفت ڊليوري 2 کان 3 ڏينهن اندر)\n💳 ادائگي جا طريقا:\n   • ڪيش آن ڊليوري (Cash on Delivery)\n   • جاز ڪيش / ايزي پئسا: 0300-1234567\n   • بئنڪ اڪائونٽ: ميزان بئنڪ (Meezan Bank Ltd)\n📍 آفيس/دڪان جو پتو: سنڌ ٽريڊ سينٽر، ڪراچي، سنڌ\n📞 هيلپ لائن ۽ واٽس ايپ: +92 300 1234567\n━━━━━━━━━━━━━━━━━━━━━━━\n\nمين مينيو ڏسڻ لاءِ *0* لکو.",
+            agent_handoff: "👨‍💼 توهان جي درخواست سيلز ٽيم ڏانهن اماڻي وئي آهي.\nاسان جو نمائندو ٿوري ئي دير ۾ هتي اوهان سان رابطو ڪندو.\n\nمينيو تي واپس وڃڻ لاءِ *0* لکو."
+        }
+    };
+
+    const CHIPS_CONFIG = {
+        ur: [
+            { label: '📋 مین مینیو (0)', val: '0', cls: '' },
+            { label: '🛍️ پروڈکٹس (1)', val: '1', cls: '' },
+            { label: '🛒 نیا آرڈر (2)', val: '2', cls: 'chip-btn-primary' },
+            { label: '📝 پتہ فارم (Card)', action: 'openCard', cls: 'chip-btn-success' },
+            { label: '📦 میرے آرڈرز', action: 'openOrders', cls: 'chip-btn-primary' },
+            { label: '🔍 ٹریکنگ (3)', val: '3', cls: '' },
+            { label: '💳 معلومات (4)', val: '4', cls: '' },
+            { label: '👨‍💼 سپورٹ (5)', val: '5', cls: '' }
+        ],
+        en: [
+            { label: '📋 Main Menu (0)', val: '0', cls: '' },
+            { label: '🛍️ Products (1)', val: '1', cls: '' },
+            { label: '🛒 Place Order (2)', val: '2', cls: 'chip-btn-primary' },
+            { label: '📝 Address Card', action: 'openCard', cls: 'chip-btn-success' },
+            { label: '📦 My Orders', action: 'openOrders', cls: 'chip-btn-primary' },
+            { label: '🔍 Track Order (3)', val: '3', cls: '' },
+            { label: '💳 Payment Info (4)', val: '4', cls: '' },
+            { label: '👨‍💼 Support (5)', val: '5', cls: '' }
+        ],
+        sd: [
+            { label: '📋 مکيه مينيو (0)', val: '0', cls: '' },
+            { label: '🛍️ پروڊڪٽس (1)', val: '1', cls: '' },
+            { label: '🛒 نئون آرڊر (2)', val: '2', cls: 'chip-btn-primary' },
+            { label: '📝 پتو فارم', action: 'openCard', cls: 'chip-btn-success' },
+            { label: '📦 منهنجا آرڊر', action: 'openOrders', cls: 'chip-btn-primary' },
+            { label: '🔍 ٽريڪنگ (3)', val: '3', cls: '' },
+            { label: '💳 ادائگي تفصيل (4)', val: '4', cls: '' },
+            { label: '👨‍💼 سپورٽ (5)', val: '5', cls: '' }
+        ]
+    };
+
+    // Orders Storage Helper
+    function getStoredOrders(phone) {
+        try {
+            const raw = localStorage.getItem(`orders_${phone}`);
+            return raw ? JSON.parse(raw) : [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function saveOrder(phone, order) {
+        try {
+            const orders = getStoredOrders(phone);
+            orders.unshift(order);
+            localStorage.setItem(`orders_${phone}`, JSON.stringify(orders));
+        } catch (e) {}
+    }
+
+    function updateLanguageUI(lang) {
+        currentLang = lang;
+        document.getElementById('btnLangUrdu').classList.toggle('active', lang === 'ur');
+        document.getElementById('btnLangEn').classList.toggle('active', lang === 'en');
+        document.getElementById('btnLangSd').classList.toggle('active', lang === 'sd');
+
+        if (lang === 'en') {
+            messageInput.placeholder = "Type message (e.g. 1, 2, P101)...";
+            messageInput.dir = "ltr";
+            document.getElementById('headerOrdersBtnText').textContent = "My Orders";
+            document.getElementById('openCardBtnText').textContent = "Address Card";
+        } else if (lang === 'sd') {
+            messageInput.placeholder = "پيغام لکو (مثال: 1، 2، P101)...";
+            messageInput.dir = "rtl";
+            document.getElementById('headerOrdersBtnText').textContent = "منظور ٿيل آرڊر";
+            document.getElementById('openCardBtnText').textContent = "پتو فارم";
+        } else {
+            messageInput.placeholder = "پیغام لکھیں (مثلاً: 1، 2، P101)...";
+            messageInput.dir = "rtl";
+            document.getElementById('headerOrdersBtnText').textContent = "منظور شدہ آرڈرز";
+            document.getElementById('openCardBtnText').textContent = "پتہ فارم";
+        }
+
+        renderChips(lang);
+    }
+
+    function renderChips(lang) {
+        quickChips.innerHTML = '';
+        const list = CHIPS_CONFIG[lang] || CHIPS_CONFIG['ur'];
+        list.forEach(chip => {
+            const btn = document.createElement('button');
+            btn.className = `chip-btn ${chip.cls || ''}`;
+            btn.textContent = chip.label;
+            if (chip.action === 'openCard') {
+                btn.onclick = () => toggleOrderCard(true);
+            } else if (chip.action === 'openOrders') {
+                btn.onclick = () => openOrdersModal();
+            } else {
+                btn.onclick = () => sendQuick(chip.val);
+            }
+            quickChips.appendChild(btn);
+        });
+    }
+
+    messageInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+
+    function getCurrentTime() {
+        const d = new Date();
+        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function appendMessage(text, isOutgoing = false) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = isOutgoing ? 'msg msg-outgoing' : 'msg msg-incoming';
+        
+        const textNode = document.createTextNode(text);
+        msgDiv.appendChild(textNode);
+
+        const timeSpan = document.createElement('span');
+        timeSpan.className = 'msg-time';
+        timeSpan.textContent = getCurrentTime();
+        msgDiv.appendChild(timeSpan);
+
+        chatBody.appendChild(msgDiv);
+        chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    // Process Bot Responses locally for GitHub Pages
+    function processLocalBotResponse(input) {
+        const txt = input.trim().toLowerCase();
+        const langTexts = TEXTS[currentLang] || TEXTS['ur'];
+        const phone = phoneInput.value.trim() || '923001234567';
+
+        // Language switchers
+        if (txt === 'urdu' || txt === 'اردو') {
+            switchLanguage('ur');
+            return null;
+        }
+        if (txt === 'english' || txt === 'en') {
+            switchLanguage('en');
+            return null;
+        }
+        if (txt === 'sindhi' || txt === 'سنڌي') {
+            switchLanguage('sd');
+            return null;
+        }
+
+        // Global Reset / Menu / Greeting
+        if (['0', 'menu', 'main menu', 'مینیو', 'مین مینیو', 'cancel', 'reset', 'hi', 'hello', 'salam', 'اسلام علیکم', 'سلام'].includes(txt)) {
+            return langTexts.main_menu;
+        }
+
+        // 1: Product Catalog
+        if (txt === '1' || txt === 'پروڈکٹس' || txt === 'products') {
+            let cat = langTexts.catalog_header;
+            let idx = 1;
+            for (const [code, p] of Object.entries(PRODUCTS)) {
+                const name = currentLang === 'en' ? p.name_en : (currentLang === 'sd' ? p.name_sd : p.name_ur);
+                cat += `${idx}️⃣ *${name}*\n• کوڈ: \`${code}\` | قیمت: *Rs ${p.price.toLocaleString()}*\n• تفصیل: ${p.desc}\n\n`;
+                idx++;
+            }
+            cat += langTexts.catalog_footer;
+            return cat;
+        }
+
+        // 2: Place Order
+        if (txt === '2' || txt === 'order' || txt === 'آرڈر') {
+            toggleOrderCard(true);
+            return langTexts.order_prompt;
+        }
+
+        // 3: Tracking & Orders History
+        if (txt === '3' || txt === 'tracking' || txt === 'ٹریکنگ' || txt.includes('آرڈر') || txt === 'orders') {
+            const orders = getStoredOrders(phone);
+            if (orders.length > 0) {
+                let out = "📦 *آپ کے سابقہ اور منظور شدہ آرڈرز کی فہرست:*\n━━━━━━━━━━━━━━━━━━━━━━━\n";
+                orders.forEach((o, i) => {
+                    out += `${i + 1}️⃣ *آرڈر:* \`${o.order_number}\`\n• کیفیت: *${o.status_label}*\n• سامان: ${o.items}\n• کل رقم: *Rs ${Number(o.total_amount).toLocaleString()}* (${o.payment_method})\n• تاریخ: ${o.date}\n\n`;
+                });
+                out += "━━━━━━━━━━━━━━━━━━━━━━━\nکسی بھی آرڈر کو ٹریک کرنے کے لیے اس کا نمبر لکھیں۔\nمین مینیو کے لیے *0* لکھیں۔";
+                return out;
+            } else {
+                return "براہ کرم اپنا آرڈر نمبر درج کریں (مثلاً: ORD-2026-1001) یا اوپر 'پتہ فارم' پر کلک کر کے نیا آرڈر بک فرمائیں:\n\n(مین مینیو کے لیے 0 لکھیں)";
+            }
+        }
+
+        // Direct ORD- Tracking lookup
+        if (txt.toUpperCase().startsWith('ORD-')) {
+            const ordNum = txt.toUpperCase();
+            const orders = getStoredOrders(phone);
+            const found = orders.find(o => o.order_number === ordNum);
+            if (found) {
+                return `🔍 *آرڈر کی تفصیلات و موجودہ کیفیت:*\n━━━━━━━━━━━━━━━━━━━━━━━\n• آرڈر نمبر: *${found.order_number}*\n• خریدار: ${found.customer_name}\n• تاریخ: ${found.date}\n• پروڈکٹس: ${found.items}\n• کل رقم: *Rs ${Number(found.total_amount).toLocaleString()}*\n• طریقہ ادائیگی: ${found.payment_method}\n• موجودہ کیفیت: *${found.status_label}*\n• ترسیلی پتہ: ${found.delivery_address}\n━━━━━━━━━━━━━━━━━━━━━━━\n\nمین مینیو کے لیے *0* درج کریں۔`;
+            } else {
+                return `🔍 *آرڈر کی تفصیلات:*\n━━━━━━━━━━━━━━━━━━━━━━━\n• آرڈر نمبر: *${ordNum}*\n• موجودہ کیفیت: *✅ منظور شدہ اور تصدیق شدہ (Approved/Confirmed)*\n• کوریئر اسٹیٹس: ڈسپیچ کے عمل میں\n• ترسیلی سروس: مفت ہوم ڈیلیوری (2 سے 3 دن)\n━━━━━━━━━━━━━━━━━━━━━━━\n\nمین مینیو کے لیے *0* درج کریں۔`;
+            }
+        }
+
+        // 4: Business Info
+        if (txt === '4' || txt === 'معلومات') {
+            return langTexts.business_info;
+        }
+
+        // 5: Support Handoff
+        if (txt === '5' || txt === 'سپورٹ' || txt === 'support') {
+            return langTexts.agent_handoff;
+        }
+
+        // Direct Product Code (P101-P105)
+        const upper = txt.toUpperCase();
+        if (PRODUCTS[upper]) {
+            document.getElementById('cardProductCode').value = upper;
+            toggleOrderCard(true);
+            const p = PRODUCTS[upper];
+            const pName = currentLang === 'en' ? p.name_en : (currentLang === 'sd' ? p.name_sd : p.name_ur);
+            return `آپ نے منتخب کیا ہے: *${pName}* (Rs ${p.price.toLocaleString()})۔\nترسیلی پتہ اور آرڈر مکمل کرنے کے لیے نیچے دیے گئے فارم میں تفصیلات بھریں، یا اوپر 'پتہ فارم' پر کلک کریں۔`;
+        }
+
+        return `براہ کرم دیے گئے آپشنز میں سے درست نمبر (1 تا 6) منتخب کریں، یا مین مینیو کے لیے *0* لکھیں۔\n\n${langTexts.main_menu}`;
+    }
+
+    async function sendMessage() {
+        const text = messageInput.value.trim();
+        if (!text) return;
+
+        appendMessage(text, true);
+        messageInput.value = '';
+        messageInput.focus();
+
+        setTimeout(() => {
+            const reply = processLocalBotResponse(text);
+            if (reply) {
+                appendMessage(reply, false);
+            }
+        }, 300);
+    }
+
+    function sendQuick(val) {
+        messageInput.value = val;
+        sendMessage();
+    }
+
+    function switchLanguage(lang) {
+        updateLanguageUI(lang);
+        chatBody.innerHTML = '';
+        appendMessage(TEXTS[lang].main_menu, false);
+    }
+
+    function resetChat() {
+        toggleOrderCard(false);
+        chatBody.innerHTML = '';
+        updateLanguageUI(currentLang);
+        appendMessage(TEXTS[currentLang].main_menu, false);
+        refreshCustomerOrdersBadge();
+    }
+
+    function toggleOrderCard(show = true) {
+        if (show) {
+            const phone = phoneInput.value.trim() || '923001234567';
+            document.getElementById('cardCustomerPhone').value = phone;
+            orderCardContainer.style.display = 'block';
+            document.getElementById('cardCustomerName').focus();
+        } else {
+            orderCardContainer.style.display = 'none';
+        }
+    }
+
+    function submitOrderCardForm(e) {
+        e.preventDefault();
+        const phone = phoneInput.value.trim() || '923001234567';
+        const productCode = document.getElementById('cardProductCode').value;
+        const qty = parseInt(document.getElementById('cardQuantity').value) || 1;
+        const name = document.getElementById('cardCustomerName').value.trim();
+        const address = document.getElementById('cardDeliveryAddress').value.trim();
+        const paymentMethod = document.getElementById('cardPaymentMethod').value;
+
+        if (!name || !address) {
+            alert('براہ کرم خریدار کا نام اور مکمل ترسیلی پتہ درج فرمائیں۔');
+            return;
+        }
+
+        const product = PRODUCTS[productCode] || PRODUCTS['P101'];
+        const pName = currentLang === 'en' ? product.name_en : (currentLang === 'sd' ? product.name_sd : product.name_ur);
+        const totalAmount = product.price * qty;
+
+        // Generate Order ID
+        const year = new Date().getFullYear();
+        const rand = Math.floor(1000 + Math.random() * 9000);
+        const orderNumber = `ORD-${year}-${rand}`;
+
+        // Save order locally
+        const newOrder = {
+            id: Date.now(),
+            order_number: orderNumber,
+            customer_name: name,
+            customer_phone: phone,
+            delivery_address: address,
+            total_amount: totalAmount,
+            status: "CONFIRMED",
+            status_label: "✅ منظور شدہ اور تصدیق شدہ (Approved/Confirmed)",
+            payment_method: paymentMethod,
+            date: new Date().toLocaleString(),
+            items: `${pName} (x${qty})`
+        };
+        saveOrder(phone, newOrder);
+
+        // Display user filled card bubble in chat
+        const userSummary = `📝 *آرڈر اور ترسیلی پتہ فارم جمع کر دیا گیا*\n• پروڈکٹ: ${pName}\n• تعداد: ${qty}\n• خریدار: ${name}\n• پتہ: ${address}\n• ادائیگی: ${paymentMethod}`;
+        appendMessage(userSummary, true);
+
+        toggleOrderCard(false);
+
+        // Generate Bot Confirmation Reply with Cash Collection Details
+        let reply = "";
+        if (paymentMethod === "EasyPaisa / JazzCash") {
+            reply = `🎉 *مبارک ہو! آپ کا آرڈر کامیابی سے بک ہو گیا ہے۔*\n\n📦 آرڈر ٹریکنگ نمبر: *${orderNumber}*\n💰 کل واجب الادا رقم: *Rs ${totalAmount.toLocaleString()}*\n\n📱 *JazzCash / EasyPaisa ادائیگی تفصیلات:*\n• موبائل اکاؤنٹ نمبر: *0300-1234567*\n• اکاؤنٹ ٹائٹل: *CTrend Business Store*\n\n⚠️ *پیسے ادا کرنے کے بعد:*\nبراہ کرم رقم ٹرانسفر کر کے ٹرانزیکشن آئی ڈی (TID) یا سلپ کا اسکرین شاٹ یہاں واٹس ایپ پر ارسال کریں تاکہ آپ کا پارسل فوری روانہ کیا جا سکے۔\n\nمین مینیو کے لیے *0* درج کریں۔`;
+        } else if (paymentMethod === "Direct Bank Transfer") {
+            reply = `🎉 *مبارک ہو! آپ کا آرڈر کامیابی سے بک ہو گیا ہے۔*\n\n📦 آرڈر ٹریکنگ نمبر: *${orderNumber}*\n💰 کل واجب الادا رقم: *Rs ${totalAmount.toLocaleString()}*\n\n🏦 *آفیشل بینک تفصیلات:*\n• بینک کا نام: *Meezan Bank Ltd*\n• اکاؤنٹ ٹائٹل: *CTrend Pvt Ltd*\n• اکاؤنٹ نمبر: *01020304050607*\n• IBAN: *PK99MEZN0001020304050607*\n\n⚠️ *پیسے جمع کروانے کے بعد:*\nرقم آن لائن ٹرانسفر یا بینک میں جمع کروا کے رسید یہاں واٹس ایپ پر شیئر فرمائیں۔ رسید کی تصدیق کے بعد پارسل فوری ڈسپیچ کر دیا جائے گا۔\n\nمین مینیو کے لیے *0* درج کریں۔`;
+        } else {
+            reply = `🎉 *مبارک ہو! آپ کا آرڈر کامیابی سے بک ہو گیا ہے۔*\n\n📦 آرڈر ٹریکنگ نمبر: *${orderNumber}*\n💰 کل وصولی رقم: *Rs ${totalAmount.toLocaleString()}*\n🚚 طریقہ ادائیگی: *کیش آن ڈیلیوری (COD)*\n\n🛵 *پیسے وصولی کی معلومات:*\nہمارا کوریئر رائیڈر 2 سے 3 دنوں میں آپ کے پتے پر پارسل پہنچائے گا۔ آپ پارسل چیک کر کے موقع پر رائیڈر کو *Rs ${totalAmount.toLocaleString()}* نقد ادا کریں گے۔\n\n🔍 اپنا آرڈر ٹریک کرنے کے لیے کسی بھی وقت اپنا آرڈر نمبر لکھیں۔\nمین مینیو کے لیے *0* درج کریں۔`;
+        }
+
+        setTimeout(() => {
+            appendMessage(reply, false);
+            refreshCustomerOrdersBadge();
+        }, 300);
+    }
+
+    function refreshCustomerOrdersBadge() {
+        const phone = phoneInput.value.trim() || '923001234567';
+        const orders = getStoredOrders(phone);
+        if (orders.length > 0) {
+            ordersBadgeCount.textContent = orders.length;
+            ordersBadgeCount.style.display = 'inline-block';
+        } else {
+            ordersBadgeCount.style.display = 'none';
+        }
+    }
+
+    function openOrdersModal() {
+        const phone = phoneInput.value.trim() || '923001234567';
+        document.getElementById('modalCustomerPhone').textContent = phone;
+        const modalBody = document.getElementById('ordersModalBody');
+        const orders = getStoredOrders(phone);
+
+        if (!ordersModalInstance) {
+            ordersModalInstance = new bootstrap.Modal(document.getElementById('ordersModal'));
+        }
+        ordersModalInstance.show();
+
+        if (orders.length === 0) {
+            modalBody.innerHTML = `
+                <div class="text-center py-5">
+                    <i class="fa-solid fa-box-open text-muted fs-1 mb-3"></i>
+                    <h6 class="fw-bold text-dark">کوئی سابقہ آرڈر موجود نہیں</h6>
+                    <p class="text-muted small">اس فون نمبر پر ابھی تک کوئی آرڈر بک یا موصول نہیں ہوا۔</p>
+                    <button class="btn btn-sm btn-success mt-2" onclick="toggleOrderCard(true)" data-bs-dismiss="modal">
+                        <i class="fa-solid fa-cart-plus me-1"></i> نیا آرڈر بک کریں (پتہ فارم)
+                    </button>
+                </div>`;
+        } else {
+            let html = `<div class="d-flex flex-column gap-3">`;
+            orders.forEach((o) => {
+                html += `
+                    <div class="card border rounded-3 shadow-sm">
+                        <div class="card-header bg-light py-2 d-flex align-items-center justify-content-between">
+                            <span class="fw-bold text-primary"><i class="fa-solid fa-receipt me-1"></i> ${o.order_number}</span>
+                            <span class="badge bg-success text-white">${o.status_label || 'منظور شدہ'}</span>
+                        </div>
+                        <div class="card-body p-3">
+                            <div class="row g-1 small">
+                                <div class="col-7"><strong>📦 سامان:</strong> ${o.items}</div>
+                                <div class="col-5 text-end"><strong>💰 کل رقم:</strong> <span class="text-success fw-bold">Rs ${Number(o.total_amount).toLocaleString()}</span></div>
+                                <div class="col-12 text-muted mt-1"><i class="fa-regular fa-clock me-1"></i> ${o.date}</div>
+                                <div class="col-12 mt-1"><strong>👤 خریدار:</strong> ${o.customer_name}</div>
+                                <div class="col-12 text-muted"><strong>📍 ترسیلی پتہ:</strong> ${o.delivery_address}</div>
+                                <div class="col-12 mt-1"><strong>💳 طریقہ ادائیگی:</strong> <span class="badge bg-light text-dark border">${o.payment_method}</span></div>
+                            </div>
+                            <div class="d-flex justify-content-end mt-2 pt-2 border-top">
+                                <button class="btn btn-sm btn-outline-primary py-0 px-2 font-monospace" onclick="trackFromModal('${o.order_number}')">
+                                    <i class="fa-solid fa-magnifying-glass me-1"></i> چیٹ میں لائیو ٹریک کریں
+                                </button>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+            html += `</div>`;
+            modalBody.innerHTML = html;
+        }
+    }
+
+    function trackFromModal(orderNumber) {
+        if (ordersModalInstance) {
+            ordersModalInstance.hide();
+        }
+        sendQuick(orderNumber);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        resetChat();
+    });
+</script>
+</body>
+</html>
